@@ -11,6 +11,7 @@ import Income from "./pages/Dashboard/Income";
 import Home from "./pages/Dashboard/Home";
 import Login from "./pages/Auth/Login";
 import Expense from "./pages/Dashboard/Expense";
+import Transactions from "./pages/Dashboard/Transactions";
 
 const App = () => {
   return (
@@ -23,6 +24,9 @@ const App = () => {
           <Route path="/dashboard" element={<Home />} />
           <Route path="/income" element={<Income />} />
           <Route path="/expense" element={<Expense />} />
+          <Route path="/transactions" element={<Transactions/>} />
+
+
         </Routes>
       </Router>
     </UserProvider>
