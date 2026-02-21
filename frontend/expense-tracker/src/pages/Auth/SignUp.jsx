@@ -1,19 +1,56 @@
-import React, { useState } from "react";
-import { TrendingUp, Eye } from "lucide-react";
+// src/pages/Auth/SignUp.jsx
+import { useState, useContext } from "react";
+import { TrendingUp, Eye, EyeOff } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import card2 from "../../assets/images/card2.png";
-import ProfilePhotoSelector from "../../components/inputs/ProfilePhotoSelector";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPath";
+import { UserContext } from "../../context";
 
 const SignUp = () => {
-  const [photo, setPhoto] = useState(null);
+  const navigate = useNavigate();
+  const { login } = useContext(UserContext);
 
-  const handlePhotoSelect = (file) => {
-    setPhoto(file);
-  };
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+  });
 
-  const handleSubmit = (e) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Selected photo:", photo);
-    // Add signup logic (backend request) here
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      // Call signup API
+      const response = await axiosInstance.post(
+        API_PATHS.AUTH.REGISTER,
+        formData,
+      );
+
+      const token = response.data?.token;
+      if (!token) throw new Error("No token returned from server");
+
+      // Save token in context
+      login(token);
+
+      // Navigate to dashboard
+      navigate("/dashboard");
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || error.message || "Signup failed",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,97 +65,106 @@ const SignUp = () => {
             Please enter your details to sign up
           </p>
 
-          {/* Profile Photo Selector */}
+          {errorMessage && (
+            <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm">
+              {errorMessage}
+            </div>
+          )}
+
+          {/* Profile Photo */}
           <div className="mb-6 flex justify-center">
-            <ProfilePhotoSelector onPhotoSelect={handlePhotoSelect} />
+            <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+              <span className="text-gray-500">Photo</span>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-7">
             <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name
               </label>
               <input
+                id="fullName"
                 type="text"
-                id="name"
+                value={formData.fullName}
+                onChange={handleChange}
                 placeholder="John Doe"
-                className="w-full px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400"
+                className="w-full px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
                 required
               />
             </div>
 
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <input
-                type="email"
                 id="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="john@example.com"
-                className="w-full px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400"
+                className="w-full px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
                 required
               />
             </div>
 
             <div className="relative">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 pr-12"
+                className="w-full px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 pr-12"
                 required
               />
               <button
                 type="button"
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-11 text-gray-500 hover:text-purple-600"
               >
-                <Eye className="w-5 h-5" />
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-purple-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-purple-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              disabled={loading}
+              className="w-full bg-purple-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-purple-700 transition-all disabled:opacity-60"
             >
-              Sign Up
+              {loading ? "Signing up..." : "Sign Up"}
             </button>
           </form>
 
           <p className="text-center mt-8 text-gray-600">
             Already have an account?{" "}
-            <a
-              href="login"
+            <Link
+              to="/login"
               className="text-purple-600 font-medium hover:underline"
             >
               Login
-            </a>
+            </Link>
           </p>
         </div>
       </div>
 
-      {/* Right side - Branding + Stats + Chart */}
+      {/* Right side - Branding + Chart */}
       <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-violet-500 via-purple-700 to-fuchsia-500 items-start justify-center pt-7 px-10 relative overflow-hidden">
-        {/* Make this container relative for tooltip */}
         <div className="relative w-full max-w-2xl text-black flex flex-col items-center">
-          {/* Stats Card */}
           <div className="bg-white rounded-2xl p-8 border border-white/20 shadow-2xl mb-6 w-full h-auto">
             <div className="flex items-center gap-4">
-              <div className=" p-4 rounded-full">
-                <TrendingUp className="w-8 h-8  text-black " />
+              <div className="p-4 rounded-full">
+                <TrendingUp className="w-8 h-8 text-black" />
               </div>
-              <div className="text-black bg-white p-2 rounded-md">
+              <div>
                 <h3 className="text-l font-2xl">
                   Track Your Income & Expenses
                 </h3>
@@ -127,7 +173,6 @@ const SignUp = () => {
             </div>
           </div>
 
-          {/* Chart Image */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl w-full relative">
             <div className="flex justify-between items-center mb-4 text-white">
               <h4 className="text-lg font-semibold">All Transactions</h4>
@@ -144,10 +189,6 @@ const SignUp = () => {
             />
           </div>
         </div>
-
-        {/* Decorative shapes */}
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-fuchsia-400/30 rounded-full blur-3xl"></div>
-        <div className="absolute -top-20 -left-20 w-80 h-80 bg-violet-400/20 rounded-full blur-3xl"></div>
       </div>
     </div>
   );

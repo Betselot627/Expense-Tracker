@@ -1,4 +1,4 @@
-const Income = require("../models/income");
+const Income = require("../models/Income");
 
 // Add new income
 const addIncome = async (req, res) => {
@@ -74,7 +74,7 @@ const downloadIncomeCSV = async (req, res) => {
 
     incomes.forEach((income) => {
       csv += `"${income.icon}","${income.source}",${income.amount},"${new Date(
-        income.date
+        income.date,
       ).toISOString()}"\n`;
     });
 

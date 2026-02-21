@@ -8,19 +8,11 @@ const {
 const { protect } = require("../middleware/authMiddleware");
 const uploadFiles = require("../middleware/uploadMiddleware");
 const User = require("../models/User"); // move to top
-
 const router = express.Router();
 
-// POST /register - only registration
 router.post("/register", registerUser);
-
-// POST /login
 router.post("/login", loginUser);
-
-// GET /getUser - protected
 router.get("/getUser", protect, getUserInfo);
-
-// POST /upload/profile-image
 router.post(
   "/upload-image",
   protect,

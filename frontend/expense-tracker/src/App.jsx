@@ -1,31 +1,31 @@
-import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
+import { UserProvider } from "./context";
 
-
-  
 import SignUp from "./pages/Auth/SignUp";
 import Income from "./pages/Dashboard/Income";
 import Home from "./pages/Dashboard/Home";
-import Login from "./pages/Auth/login";
+import Login from "./pages/Auth/Login";
 import Expense from "./pages/Dashboard/Expense";
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Root />} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/signUp" element={<SignUp/>} />
-        <Route path="/dashboard" element={<Home/>} />
-        <Route path="/income" element={<Income />} />
-        <Route path="/expense" element={<Expense />} />
-
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Root />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard" element={<Home />} />
+          <Route path="/income" element={<Income />} />
+          <Route path="/expense" element={<Expense />} />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 };
 
@@ -33,7 +33,6 @@ export default App;
 
 const Root = () => {
   const isAuthenticated = !!localStorage.getItem("token");
-  // Redirect to dashboard if authenticated, otherwise to login
   return isAuthenticated ? (
     <Navigate to="/dashboard" />
   ) : (

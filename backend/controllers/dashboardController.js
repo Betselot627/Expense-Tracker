@@ -1,4 +1,4 @@
-const Income = require("../models/income");
+const Income = require("../models/Income");
 const Expense = require("../models/Expense");
 
 const getDashboardData = async (req, res) => {
@@ -19,7 +19,10 @@ const getDashboardData = async (req, res) => {
     const totalIncome = allIncomes.reduce((sum, item) => sum + item.amount, 0);
 
     const allExpenses = await Expense.find({ user: userId });
-    const totalExpense = allExpenses.reduce((sum, item) => sum + item.amount, 0);
+    const totalExpense = allExpenses.reduce(
+      (sum, item) => sum + item.amount,
+      0,
+    );
 
     // -----------------------------
     // LAST 30 DAYS
@@ -30,7 +33,7 @@ const getDashboardData = async (req, res) => {
     });
     const totalIncomeLast30 = incomeLast30.reduce(
       (sum, item) => sum + item.amount,
-      0
+      0,
     );
 
     const expenseLast30 = await Expense.find({
@@ -39,7 +42,7 @@ const getDashboardData = async (req, res) => {
     });
     const totalExpenseLast30 = expenseLast30.reduce(
       (sum, item) => sum + item.amount,
-      0
+      0,
     );
 
     // -----------------------------
