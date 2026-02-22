@@ -3,16 +3,34 @@ const {
   registerUser,
   getUserInfo,
   loginUser,
+  googleLogin,
+  githubCallback,
 } = require("../controllers/authController");
 
 const { protect } = require("../middleware/authMiddleware");
 const uploadFiles = require("../middleware/uploadMiddleware");
-const User = require("../models/User"); // move to top
+const User = require("../models/User");
+const passport = require("../config/passport");
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/getUser", protect, getUserInfo);
+
+// OAuth routes
+router.post("/google", googleLogin);
+
+// GitHub OAuth
+router.get(
+  "/github",
+  passport.authenticate("github", { scope: ["user:email"] }),
+);
+
+router.get(
+  "/github/callback",
+  passport.authenticate("github", { failureRedirect: "/login" }),
+  githubCallback,
+);
 router.post(
   "/upload-image",
   protect,
@@ -28,7 +46,7 @@ router.post(
       const user = await User.findByIdAndUpdate(
         req.user.id,
         { profileImageURL },
-        { new: true }
+        { new: true },
       );
 
       res.status(200).json({
@@ -39,7 +57,7 @@ router.post(
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
-  }
+  },
 );
 
 module.exports = router;

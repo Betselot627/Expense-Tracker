@@ -1,6 +1,9 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { OAuth2Client } = require("google-auth-library");
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -100,8 +103,80 @@ const getUserInfo = async (req, res) => {
   }
 };
 
+// 🔐 Google OAuth Login
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ message: "No credential provided" });
+    }
+
+    // Verify Google token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user if doesn't exist
+      user = await User.create({
+        fullName: name,
+        email,
+        password: await bcrypt.hash(Math.random().toString(36), 10), // Random password for OAuth users
+        profileImageURL: picture || "",
+        authProvider: "google",
+      });
+    }
+
+    res.status(200).json({
+      message: "Google login successful",
+      token: generateToken(user._id),
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        profileImageURL: user.profileImageURL,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ message: "Google authentication failed" });
+  }
+};
+
+// 🔐 GitHub OAuth Callback
+const githubCallback = async (req, res) => {
+  try {
+    // User is authenticated via passport, available in req.user
+    const user = req.user;
+
+    if (!user) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/login?error=auth_failed`,
+      );
+    }
+
+    const token = generateToken(user._id);
+
+    // Redirect to frontend with token
+    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+  } catch (error) {
+    console.error("GitHub callback error:", error);
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserInfo,
+  googleLogin,
+  githubCallback,
 };
