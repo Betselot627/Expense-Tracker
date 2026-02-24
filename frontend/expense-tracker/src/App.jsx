@@ -22,11 +22,11 @@ const App = () => {
           <Route path="/" element={<Root />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="/dashboard" element={<Home />} />
           <Route path="/income" element={<Income />} />
           <Route path="/expense" element={<Expense />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/oauth-callback" element={<OAuthCallback />} />
         </Routes>
       </Router>
     </UserProvider>

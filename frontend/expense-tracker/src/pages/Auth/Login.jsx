@@ -1,33 +1,42 @@
 // src/pages/auth/Login.jsx
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Eye, EyeOff, LogIn } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 import { UserContext } from "../../context";
 import { GoogleLogin } from "@react-oauth/google";
 
+const GITHUB_CLIENT_ID = "YOUR_GITHUB_CLIENT_ID"; // replace with your GitHub Client ID
+const GITHUB_AUTH_URL = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=user:email`;
+
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useContext(UserContext);
+  const [searchParams] = useSearchParams();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Clean up any URL parameters on component mount
+  useEffect(() => {
+    if (
+      searchParams.has("token") ||
+      searchParams.has("error") ||
+      searchParams.has("success")
+    ) {
+      navigate("/login", { replace: true });
+    }
+  }, [searchParams, navigate]);
+
+  // Handle email/password input change
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Handle email/password login
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -52,35 +61,47 @@ const Login = () => {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setSocialLoading(true);
-    setError("");
-
-    try {
-      const res = await axiosInstance.post(API_PATHS.AUTH.GOOGLE, {
-        credential: credentialResponse.credential,
-      });
-
-      const token = res.data?.token;
-      if (!token) throw new Error("No token received from server");
-
-      localStorage.setItem("token", token);
-      login(token);
-      navigate("/dashboard", { replace: true });
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Google sign-in failed. Please try again.",
-      );
-    } finally {
-      setSocialLoading(false);
+  // FRONTEND-ONLY Google login
+  const handleGoogleSuccess = (credentialResponse) => {
+    const token = credentialResponse.credential;
+    if (!token) {
+      setError("Google sign-in failed. No token received.");
+      return;
     }
+    localStorage.setItem("token", token);
+    login(token);
+    navigate("/dashboard", { replace: true });
   };
 
-  const handleGitHubLogin = () => {
-    setSocialLoading(true);
-    // Redirect to backend GitHub OAuth route
-    window.location.href = "http://localhost:8000/api/v1/auth/github";
+  const handleGoogleError = () => {
+    setError("Google sign-in failed. Please try again.");
+  };
+
+  // FRONTEND-ONLY GitHub login
+  const handleGithubLogin = () => {
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    const githubWindow = window.open(
+      GITHUB_AUTH_URL,
+      "GitHub Login",
+      `width=${width},height=${height},top=${top},left=${left}`,
+    );
+
+    // Listen for message from popup
+    window.addEventListener("message", function githubListener(e) {
+      if (e.origin !== window.location.origin) return;
+      const { token } = e.data || {};
+      if (token) {
+        localStorage.setItem("token", token);
+        login(token);
+        navigate("/dashboard", { replace: true });
+        window.removeEventListener("message", githubListener);
+        githubWindow.close();
+      }
+    });
   };
 
   return (
@@ -110,8 +131,8 @@ const Login = () => {
               </div>
             )}
 
+            {/* Email/Password Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email & Password fields (unchanged) */}
               <div>
                 <label
                   htmlFor="email"
@@ -200,6 +221,7 @@ const Login = () => {
               </button>
             </form>
 
+            {/* Divider */}
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200" />
@@ -211,38 +233,27 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Social buttons */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Google – popup */}
-              <div className="w-full">
+            {/* Social Logins */}
+            <div className="space-y-4">
+              {/* Google login */}
+              <div className="flex justify-center">
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
-                  onError={() => setError("Google sign-in failed")}
+                  onError={handleGoogleError}
                   text="signin_with"
                   shape="rectangular"
                   theme="outline"
                   size="large"
                   width="100%"
-                  logo_alignment="left"
-                  disabled={socialLoading}
                 />
               </div>
 
-              {/* GitHub – redirect */}
+              {/* GitHub login */}
               <button
-                type="button"
-                onClick={handleGitHubLogin}
-                disabled={socialLoading}
-                className="flex items-center justify-center gap-3 w-full py-3.5 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 text-gray-700 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                onClick={handleGithubLogin}
+                className="w-full py-3.5 px-4 bg-gray-900 text-white font-medium rounded-xl shadow-md hover:bg-gray-800 transition-all duration-200"
               >
-                <svg
-                  className="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.69c-2.78.61-3.37-1.34-3.37-1.34-.46-1.16-1.12-1.47-1.12-1.47-.91-.62.07-.61.07-.61 1.01.07 1.54 1.04 1.54 1.04.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03A9.56 9.56 0 0112 6.8c.85.004 1.71.11 2.52.33 1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .26.18.57.69.49C19.13 20.17 22 16.42 22 12c0-5.52-4.48-10-10-10z" />
-                </svg>
-                GitHub
+                Sign in with GitHub
               </button>
             </div>
 

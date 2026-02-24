@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8000/api/v1", // ✅ matches backend
+  baseURL: "http://localhost:8000/api/v1", // backend is running on port 8000
   headers: {
     "Content-Type": "application/json",
   },
@@ -19,7 +19,7 @@ axiosInstance.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export default axiosInstance;

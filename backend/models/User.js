@@ -6,11 +6,6 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profileImageURL: { type: String, default: "" },
-    authProvider: {
-      type: String,
-      enum: ["local", "google", "github"],
-      default: "local",
-    },
   },
   { timestamps: true },
 );
