@@ -12,6 +12,7 @@ import Home from "./pages/Dashboard/Home";
 import Login from "./pages/Auth/Login";
 import Expense from "./pages/Dashboard/Expense";
 import Transactions from "./pages/Dashboard/Transactions";
+import Profile from "./pages/Dashboard/Profile";
 import OAuthCallback from "./pages/Auth/OAuthCallback";
 
 const App = () => {
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/income" element={<Income />} />
           <Route path="/expense" element={<Expense />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
         </Routes>
       </Router>

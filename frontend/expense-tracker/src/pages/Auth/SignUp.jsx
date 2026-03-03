@@ -36,11 +36,15 @@ const SignUp = () => {
       const res = await axiosInstance.post(API_PATHS.AUTH.REGISTER, formData);
 
       const token = res.data?.token;
+      const user = res.data?.user;
+
       if (!token) {
         throw new Error("No token received from server");
       }
 
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
       login(token);
 
       navigate("/dashboard", { replace: true });

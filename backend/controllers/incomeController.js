@@ -5,7 +5,16 @@ const addIncome = async (req, res) => {
   try {
     const { icon, source, amount, date } = req.body;
 
+    console.log("Add income request:", {
+      icon,
+      source,
+      amount,
+      date,
+      user: req.user?._id,
+    });
+
     if (!icon || !source || !amount) {
+      console.log("Missing required fields");
       return res
         .status(400)
         .json({ message: "Please provide all required fields." });
@@ -20,10 +29,11 @@ const addIncome = async (req, res) => {
     });
 
     const savedIncome = await newIncome.save();
+    console.log("Income saved successfully:", savedIncome._id);
     res.status(201).json(savedIncome);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    console.error("Error adding income:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 

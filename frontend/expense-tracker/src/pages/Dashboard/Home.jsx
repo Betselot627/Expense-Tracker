@@ -1,45 +1,55 @@
 // src/pages/Dashboard/Home.jsx
 import { useState, useEffect, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Wallet,
   TrendingUp,
   TrendingDown,
-  LogOut,
-  ShoppingBag,
-  Plane,
-  Lightbulb,
-  Home as HomeIcon,
-  Bus,
+  ArrowUpRight,
+  ArrowDownRight,
+  Activity,
 } from "lucide-react";
+import Sidebar from "../../components/Sidebar";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 import { UserContext } from "../../context";
 import {
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
+  LineChart,
+  Line,
 } from "recharts";
 
+const COLORS = {
+  income: "#10b981",
+  expense: "#ef4444",
+  primary: "#8b5cf6",
+  secondary: "#6366f1",
+};
+
 const categoryIcons = {
-  Shopping: <ShoppingBag className="h-5 w-5" />,
-  Travel: <Plane className="h-5 w-5" />,
-  "Electricity Bill": <Lightbulb className="h-5 w-5" />,
-  "Loan Repayment": <HomeIcon className="h-5 w-5" />,
-  Transport: <Bus className="h-5 w-5" />,
-  Food: <span className="text-lg">🍔</span>,
-  Other: <span className="text-lg">•</span>,
+  Shopping: "🛍️",
+  Travel: "✈️",
+  "Electricity Bill": "💡",
+  "Loan Repayment": "🏦",
+  Transport: "🚌",
+  Food: "🍔",
+  Salary: "💰",
+  Freelance: "💻",
+  Other: "•",
 };
 
 const Home = () => {
-  const navigate = useNavigate();
-  const { logout, loading: authLoading, user } = useContext(UserContext);
-
+  const { user } = useContext(UserContext);
   const [data, setData] = useState({
     totalIncome: 0,
     totalExpense: 0,
@@ -48,6 +58,7 @@ const Home = () => {
   });
 
   const [monthlyOverview, setMonthlyOverview] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,22 +69,28 @@ const Home = () => {
           ...t,
           amount: Number(t.amount) || 0,
           date: new Date(t.date || Date.now()),
-          category: t.category || "Other",
+          category: t.category || t.source || "Other",
           source: t.source || t.category || "Unknown",
           type: t.type?.toLowerCase() === "income" ? "income" : "expense",
         }));
 
         let income = 0;
         let expense = 0;
+        const categories = {};
+
         txs.forEach((t) => {
-          if (t.type === "income") income += t.amount;
-          else expense += t.amount;
+          if (t.type === "income") {
+            income += t.amount;
+          } else {
+            expense += t.amount;
+            categories[t.category] = (categories[t.category] || 0) + t.amount;
+          }
         });
 
         // Monthly overview (last 6 months)
         const months = {};
         const now = new Date();
-        for (let i = 0; i < 6; i++) {
+        for (let i = 5; i >= 0; i--) {
           const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
           const label = d.toLocaleString("default", { month: "short" });
           months[label] = { month: label, Income: 0, Expense: 0 };
@@ -87,18 +104,21 @@ const Home = () => {
           }
         });
 
-        const sortedMonths = Object.values(months).reverse();
+        // Category pie chart data
+        const catData = Object.entries(categories)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 5);
 
         setData({
           totalIncome: income,
           totalExpense: expense,
           balance: income - expense,
-          recentTransactions: txs
-            .sort((a, b) => b.date - a.date)
-            .slice(0, 8),
+          recentTransactions: txs.sort((a, b) => b.date - a.date).slice(0, 6),
         });
 
-        setMonthlyOverview(sortedMonths);
+        setMonthlyOverview(Object.values(months));
+        setCategoryData(catData);
       } catch (err) {
         console.error("Dashboard fetch failed:", err);
       } finally {
@@ -109,302 +129,381 @@ const Home = () => {
     fetchData();
   }, []);
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600"></div>
       </div>
     );
   }
 
-  // Separate income & expense transactions
-  const incomeTransactions = data.recentTransactions.filter(
-    (tx) => tx.type === "income"
-  );
-  const expenseTransactions = data.recentTransactions.filter(
-    (tx) => tx.type === "expense"
-  );
+  const balanceChange = data.totalIncome - data.totalExpense;
+  const balancePercentage =
+    data.totalIncome > 0
+      ? ((balanceChange / data.totalIncome) * 100).toFixed(1)
+      : 0;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="hidden md:flex md:w-64 md:flex-col bg-white border-r border-gray-200">
-        <div className="p-6 border-b">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              {user?.name?.[0]?.toUpperCase() || "B"}
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900">{user?.name || "Betselot"}</p>
-              <p className="text-xs text-gray-500">Premium</p>
-            </div>
-          </div>
-        </div>
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <Sidebar />
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          <Link
-            to="/"
-            className="flex items-center px-4 py-3 bg-purple-50 text-purple-700 rounded-xl font-medium"
-          >
-            <Wallet className="mr-3 h-5 w-5" />
-            Dashboard
-          </Link>
-          <Link
-            to="/income"
-            className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-xl transition"
-          >
-            <TrendingUp className="mr-3 h-5 w-5" />
-            Income
-          </Link>
-          <Link
-            to="/expense"
-            className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-xl transition"
-          >
-            <TrendingDown className="mr-3 h-5 w-5" />
-            Expense
-          </Link>
-        </nav>
-
-        <div className="p-4 border-t">
-          <button
-            onClick={() => {
-              logout();
-              navigate("/login");
-            }}
-            className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition"
-          >
-            <LogOut className="mr-3 h-5 w-5" />
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content */}
       <div className="flex-1 overflow-auto">
-        {/* Mobile top bar */}
-        <header className="md:hidden bg-white border-b px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white font-bold">
-              B
-            </div>
-            <span className="font-semibold">{user?.name || "Betselot"}</span>
+        <div className="p-6 md:p-10 max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Welcome back, {user?.fullName?.split(" ")[0] || "User"}! 👋
+            </h1>
+            <p className="text-gray-600">Here's your financial overview</p>
           </div>
-          <button onClick={() => logout()} className="text-red-600">
-            <LogOut size={22} />
-          </button>
-        </header>
 
-        <main className="p-5 md:p-8 max-w-7xl mx-auto">
-          {/* Balance Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-6 mb-10">
-            <div className="bg-white rounded-2xl shadow border border-gray-100 p-6">
-              <div className="flex justify-between items-start">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Balance Card */}
+            <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-6 text-white">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Total Balance</p>
-                  <p className="text-3xl font-bold text-purple-700">
+                  <p className="text-purple-100 text-sm font-medium mb-1">
+                    Total Balance
+                  </p>
+                  <h2 className="text-4xl font-bold">
                     ${Math.abs(data.balance).toLocaleString()}
-                  </p>
+                  </h2>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                  <Wallet className="text-purple-600" size={24} />
+                <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                  <Wallet className="w-6 h-6" />
                 </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                {balanceChange >= 0 ? (
+                  <ArrowUpRight className="w-4 h-4 text-green-300" />
+                ) : (
+                  <ArrowDownRight className="w-4 h-4 text-red-300" />
+                )}
+                <span className="font-medium">
+                  {balancePercentage}% from last month
+                </span>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow border border-gray-100 p-6">
-              <div className="flex justify-between items-start">
+            {/* Income Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Total Income</p>
-                  <p className="text-3xl font-bold text-green-600">
+                  <p className="text-gray-600 text-sm font-medium mb-1">
+                    Total Income
+                  </p>
+                  <h2 className="text-3xl font-bold text-green-600">
                     ${data.totalIncome.toLocaleString()}
-                  </p>
+                  </h2>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                  <TrendingUp className="text-green-600" size={24} />
+                <div className="bg-green-100 p-3 rounded-xl">
+                  <TrendingUp className="w-6 h-6 text-green-600" />
                 </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Activity className="w-4 h-4" />
+                <span>Active income streams</span>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow border border-gray-100 p-6">
-              <div className="flex justify-between items-start">
+            {/* Expense Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Total Expenses</p>
-                  <p className="text-3xl font-bold text-red-600">
-                    ${data.totalExpense.toLocaleString()}
+                  <p className="text-gray-600 text-sm font-medium mb-1">
+                    Total Expenses
                   </p>
+                  <h2 className="text-3xl font-bold text-red-600">
+                    ${data.totalExpense.toLocaleString()}
+                  </h2>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
-                  <TrendingDown className="text-red-600" size={24} />
+                <div className="bg-red-100 p-3 rounded-xl">
+                  <TrendingDown className="w-6 h-6 text-red-600" />
                 </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Activity className="w-4 h-4" />
+                <span>Monthly spending</span>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-10">
-            {/* Recent Transactions */}
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl font-semibold text-gray-900">Recent Transactions</h2>
-                <Link
-                  to="/transactions"
-                  className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center gap-1"
-                >
-                  See All →
-                </Link>
-              </div>
-
-              <div className="divide-y divide-gray-100">
-                {data.recentTransactions.length > 0 ? (
-                  data.recentTransactions.map((tx) => (
-                    <div
-                      key={tx._id || tx.id}
-                      className="py-4 flex items-center justify-between hover:bg-gray-50 transition rounded-lg px-2 -mx-2"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700">
-                          {categoryIcons[tx.category] || "•"}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{tx.source || tx.category}</p>
-                          <p className="text-sm text-gray-500">
-                            {tx.date.toLocaleDateString("en-US", {
-                              month: "long",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p
-                          className={`font-semibold text-lg ${
-                            tx.type === "income" ? "text-green-600" : "text-red-600"
-                          }`}
-                        >
-                          {tx.type === "income" ? "+" : "-"}${tx.amount.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-12 text-center text-gray-500">
-                    No transactions recorded yet
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Monthly Bar Chart */}
-            <div className="bg-white rounded-2xl shadow border border-gray-100 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Monthly Overview</h2>
-              <div className="h-64 md:h-80">
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Monthly Overview - Bar Chart */}
+            <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                Monthly Overview
+              </h3>
+              <div className="h-80">
                 {monthlyOverview.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={monthlyOverview} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.6} />
-                      <XAxis dataKey="month" axisLine={false} tick={{ fill: "#6b7280" }} />
-                      <YAxis axisLine={false} tick={{ fill: "#6b7280" }} />
+                    <BarChart data={monthlyOverview}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis
+                        dataKey="month"
+                        tick={{ fill: "#6b7280", fontSize: 12 }}
+                        axisLine={{ stroke: "#e5e7eb" }}
+                      />
+                      <YAxis
+                        tick={{ fill: "#6b7280", fontSize: 12 }}
+                        axisLine={{ stroke: "#e5e7eb" }}
+                      />
                       <Tooltip
                         contentStyle={{
                           backgroundColor: "white",
                           border: "1px solid #e5e7eb",
-                          borderRadius: "8px",
+                          borderRadius: "12px",
+                          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
                         }}
                       />
-                      <Legend wrapperStyle={{ paddingTop: 10 }} />
-                      <Bar dataKey="Income" fill="#10b981" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                      <Legend />
+                      <Bar
+                        dataKey="Income"
+                        fill={COLORS.income}
+                        radius={[8, 8, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="Expense"
+                        fill={COLORS.expense}
+                        radius={[8, 8, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-full flex items-center justify-center text-gray-400">
-                    Not enough data for monthly view
+                    No data available
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Category Breakdown - Pie Chart */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                Top Expenses
+              </h3>
+              <div className="h-80">
+                {categoryData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) =>
+                          `${name} ${(percent * 100).toFixed(0)}%`
+                        }
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              [
+                                "#8b5cf6",
+                                "#6366f1",
+                                "#ec4899",
+                                "#f59e0b",
+                                "#10b981",
+                              ][index % 5]
+                            }
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400">
+                    No expense data
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* ────────────── Income Transactions ────────────── */}
-          <div className="bg-white rounded-2xl shadow border border-gray-100 p-6 mt-10">
-            <h2 className="text-xl font-semibold text-gray-900 mb-5">Income Transactions</h2>
-            <div className="divide-y divide-gray-100">
-              {incomeTransactions.length > 0 ? (
-                incomeTransactions.map((tx) => (
+          {/* Recent Transactions */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Recent Transactions
+              </h3>
+              <Link
+                to="/transactions"
+                className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1 transition"
+              >
+                View All
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="space-y-3">
+              {data.recentTransactions.length > 0 ? (
+                data.recentTransactions.map((tx) => (
                   <div
                     key={tx._id || tx.id}
-                    className="py-4 flex items-center justify-between hover:bg-green-50/40 transition rounded-lg px-2 -mx-2"
+                    className="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition border border-gray-100"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700">
-                        {categoryIcons[tx.category] || "+"}
+                      <div
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${
+                          tx.type === "income" ? "bg-green-100" : "bg-red-100"
+                        }`}
+                      >
+                        {categoryIcons[tx.category] || "•"}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{tx.source || tx.category}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-semibold text-gray-900">
+                          {tx.source || tx.category}
+                        </p>
+                        <p className="text-sm text-gray-500">
                           {tx.date.toLocaleDateString("en-US", {
-                            month: "long",
+                            month: "short",
                             day: "numeric",
                             year: "numeric",
                           })}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-lg text-green-600">
-                        +${tx.amount.toLocaleString()}
-                      </p>
+                    <div
+                      className={`text-lg font-bold ${
+                        tx.type === "income" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {tx.type === "income" ? "+" : "-"}$
+                      {tx.amount.toLocaleString()}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="py-10 text-center text-gray-500">
-                  No income transactions yet
+                <div className="py-12 text-center text-gray-500">
+                  <p className="text-lg font-medium">No transactions yet</p>
+                  <p className="text-sm mt-2">
+                    Start by adding your first transaction
+                  </p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* ────────────── Expense Transactions ────────────── */}
-          <div className="bg-white rounded-2xl shadow border border-gray-100 p-6 mt-10">
-            <h2 className="text-xl font-semibold text-gray-900 mb-5">Expense Transactions</h2>
-            <div className="divide-y divide-gray-100">
-              {expenseTransactions.length > 0 ? (
-                expenseTransactions.map((tx) => (
-                  <div
-                    key={tx._id || tx.id}
-                    className="py-4 flex items-center justify-between hover:bg-red-50/40 transition rounded-lg px-2 -mx-2"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-700">
-                        {categoryIcons[tx.category] || "−"}
+          {/* Income & Expense Breakdown */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Income Transactions */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  </div>
+                  Income Transactions
+                </h3>
+                <Link
+                  to="/income"
+                  className="text-green-600 hover:text-green-700 text-sm font-medium"
+                >
+                  View All →
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {data.recentTransactions
+                  .filter((tx) => tx.type === "income")
+                  .slice(0, 5)
+                  .map((tx) => (
+                    <div
+                      key={tx._id}
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-green-50 transition border border-green-100"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-lg">
+                          {categoryIcons[tx.category] || "💰"}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {tx.source || tx.category}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {tx.date.toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{tx.source || tx.category}</p>
-                        <p className="text-sm text-gray-600">
-                          {tx.date.toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
+                      <p className="font-bold text-green-600">
+                        +${tx.amount.toLocaleString()}
+                      </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-lg text-red-600">
+                  ))}
+                {data.recentTransactions.filter((tx) => tx.type === "income")
+                  .length === 0 && (
+                  <div className="py-8 text-center text-gray-400">
+                    <p className="text-sm">No income transactions yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Expense Transactions */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                    <TrendingDown className="w-5 h-5 text-red-600" />
+                  </div>
+                  Expense Transactions
+                </h3>
+                <Link
+                  to="/expense"
+                  className="text-red-600 hover:text-red-700 text-sm font-medium"
+                >
+                  View All →
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {data.recentTransactions
+                  .filter((tx) => tx.type === "expense")
+                  .slice(0, 5)
+                  .map((tx) => (
+                    <div
+                      key={tx._id}
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-red-50 transition border border-red-100"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-lg">
+                          {categoryIcons[tx.category] || "🛒"}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {tx.source || tx.category}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {tx.date.toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="font-bold text-red-600">
                         -${tx.amount.toLocaleString()}
                       </p>
                     </div>
+                  ))}
+                {data.recentTransactions.filter((tx) => tx.type === "expense")
+                  .length === 0 && (
+                  <div className="py-8 text-center text-gray-400">
+                    <p className="text-sm">No expense transactions yet</p>
                   </div>
-                ))
-              ) : (
-                <div className="py-10 text-center text-gray-500">
-                  No expense transactions yet
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

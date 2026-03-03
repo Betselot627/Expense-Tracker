@@ -5,6 +5,8 @@ const getDashboardData = async (req, res) => {
   try {
     const userId = req.user._id;
 
+    console.log("Fetching dashboard data for user:", userId);
+
     const now = new Date();
     const last30Days = new Date(now);
     last30Days.setDate(now.getDate() - 30);
@@ -23,6 +25,8 @@ const getDashboardData = async (req, res) => {
       (sum, item) => sum + item.amount,
       0,
     );
+
+    console.log("Total income:", totalIncome, "Total expense:", totalExpense);
 
     // -----------------------------
     // LAST 30 DAYS
@@ -73,6 +77,11 @@ const getDashboardData = async (req, res) => {
     // Take only last 5
     last5Transactions = last5Transactions.slice(0, 5);
 
+    console.log(
+      "Dashboard data fetched successfully, transactions:",
+      last5Transactions.length,
+    );
+
     res.status(200).json({
       totalIncome,
       totalExpense,
@@ -85,8 +94,8 @@ const getDashboardData = async (req, res) => {
       last5Transactions,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    console.error("Dashboard error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 

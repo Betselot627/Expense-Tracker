@@ -5,7 +5,16 @@ const addExpense = async (req, res) => {
   try {
     const { icon, category, amount, date } = req.body;
 
+    console.log("Add expense request:", {
+      icon,
+      category,
+      amount,
+      date,
+      user: req.user?._id,
+    });
+
     if (!icon || !category || !amount) {
+      console.log("Missing required fields");
       return res.status(400).json({
         message: "Please provide icon, category and amount",
       });
@@ -20,10 +29,11 @@ const addExpense = async (req, res) => {
     });
 
     const savedExpense = await newExpense.save();
+    console.log("Expense saved successfully:", savedExpense._id);
     res.status(201).json(savedExpense);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    console.error("Error adding expense:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
@@ -73,9 +83,9 @@ const downloadExpenseCSV = async (req, res) => {
     let csv = "Icon,Category,Amount,Date\n";
 
     expenses.forEach((expense) => {
-      csv += `"${expense.icon}","${expense.category}",${expense.amount},"${new Date(
-        expense.date
-      ).toISOString().split("T")[0]}"\n`;
+      csv += `"${expense.icon}","${expense.category}",${expense.amount},"${
+        new Date(expense.date).toISOString().split("T")[0]
+      }"\n`;
     });
 
     res.setHeader("Content-Type", "text/csv");

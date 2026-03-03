@@ -5,6 +5,7 @@ export const API_PATHS = {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
     GOOGLE: "/auth/google",
+    GET_USER: "/auth/getUser",
   },
 
   INCOME: {

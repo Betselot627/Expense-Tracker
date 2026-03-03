@@ -11,7 +11,11 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: [
+      process.env.CLIENT_URL || "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -19,6 +23,9 @@ app.use(
 );
 
 app.use(express.json());
+
+// Serve static files for uploads
+app.use("/uploads", express.static("uploads"));
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/income", incomeRoutes);

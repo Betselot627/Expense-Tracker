@@ -12,14 +12,18 @@ const registerUser = async (req, res) => {
   try {
     const { fullName, email, password, profileImageURL } = req.body;
 
+    console.log("Registration attempt for email:", email);
+
     // Check if all required fields exist
     if (!fullName || !email || !password) {
+      console.log("Missing required fields");
       return res.status(400).json({ message: "Please fill all fields" });
     }
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
+      console.log("User already exists:", email);
       return res.status(400).json({ message: "User already exists" });
     }
 
@@ -34,6 +38,8 @@ const registerUser = async (req, res) => {
       profileImageURL: profileImageURL || "",
     });
 
+    console.log("User registered successfully:", user._id);
+
     res.status(201).json({
       message: "User registered successfully",
       token: generateToken(user._id),
@@ -45,6 +51,7 @@ const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Registration error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -54,7 +61,10 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log("Login attempt for email:", email);
+
     if (!email || !password) {
+      console.log("Missing email or password");
       return res
         .status(400)
         .json({ message: "Please provide email and password" });
@@ -62,13 +72,17 @@ const loginUser = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
+      console.log("User not found:", email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log("Password mismatch for user:", email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    console.log("Login successful for user:", user._id);
 
     res.status(200).json({
       message: "Login successful",
@@ -81,6 +95,7 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -88,14 +103,20 @@ const loginUser = async (req, res) => {
 // 👤 Get Logged-in User Info
 const getUserInfo = async (req, res) => {
   try {
+    console.log("Getting user info for:", req.user?.id);
+
     const user = await User.findById(req.user.id).select("-password");
 
     if (!user) {
+      console.log("User not found:", req.user?.id);
       return res.status(404).json({ message: "User not found" });
     }
 
+    console.log("User info retrieved successfully:", user._id);
+
     res.status(200).json(user);
   } catch (error) {
+    console.error("Get user info error:", error);
     res.status(500).json({ message: error.message });
   }
 };
