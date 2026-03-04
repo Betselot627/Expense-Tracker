@@ -39,7 +39,7 @@ const Sidebar = () => {
               src={
                 user.profileImageURL.startsWith("http")
                   ? user.profileImageURL
-                  : `http://localhost:8000${user.profileImageURL}`
+                  : `https://expense-tracker-s9zd.onrender.com${user.profileImageURL}`
               }
               alt={user.fullName}
               className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"

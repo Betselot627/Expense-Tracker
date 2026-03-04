@@ -81,10 +81,9 @@ const Profile = () => {
         // Construct full URL if it's a relative path
         const fullImageURL = updatedImageURL.startsWith("http")
           ? updatedImageURL
-          : `http://localhost:8000${updatedImageURL}`;
+          : `https://expense-tracker-s9zd.onrender.com${updatedImageURL}`;
         setImagePreview(fullImageURL);
       }
-      setSelectedImage(null);
     } catch (error) {
       console.error("Profile update error:", error);
       setMessage({

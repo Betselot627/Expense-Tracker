@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8000/api/v1", // backend is running on port 8000
+  baseURL: "https://expense-tracker-s9zd.onrender.com/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
