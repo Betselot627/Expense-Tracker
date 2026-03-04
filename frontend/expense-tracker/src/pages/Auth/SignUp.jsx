@@ -106,7 +106,7 @@ const SignUp = () => {
                   className="block w-full px-4 py-3.5 border border-gray-300 rounded-xl 
                            focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500
                            placeholder-gray-400 transition-colors"
-                  placeholder="John Doe"
+                  placeholder="Betsi Tig"
                 />
               </div>
 

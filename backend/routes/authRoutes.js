@@ -39,7 +39,10 @@ router.post("/google", async (req, res) => {
   try {
     const { credential } = req.body;
 
+    console.log("Google OAuth request received");
+
     if (!credential) {
+      console.log("No credential provided");
       return res.status(400).json({ message: "No credential provided" });
     }
 
@@ -52,6 +55,7 @@ router.post("/google", async (req, res) => {
     const payload = ticket.getPayload();
 
     if (!payload?.email) {
+      console.log("Email not provided by Google");
       return res.status(400).json({ message: "Email not provided by Google" });
     }
 
@@ -60,22 +64,29 @@ router.post("/google", async (req, res) => {
     const fullName = payload.name;
     const picture = payload.picture;
 
-    // Check if user exists
+    console.log("Google token verified for email:", email);
+
+    // Check if user exists with this email
     let user = await User.findOne({ email });
 
-    if (!user) {
+    if (user) {
+      // User exists - link Google account by updating profile image if not set
+      console.log("Existing user found, linking Google account:", user._id);
+
+      if (!user.profileImageURL && picture) {
+        user.profileImageURL = picture;
+        await user.save();
+      }
+    } else {
+      // Create new user with Google info
+      console.log("Creating new user with Google account");
       user = await User.create({
-        fullName,
+        fullName: fullName || email.split("@")[0],
         email,
         password: await bcrypt.hash(Math.random().toString(36), 10),
         profileImageURL: picture || "",
       });
-    } else {
-      // Optional: update profile image if changed
-      if (picture && user.profileImageURL !== picture) {
-        user.profileImageURL = picture;
-        await user.save();
-      }
+      console.log("New user created:", user._id);
     }
 
     const token = generateToken(user._id);
@@ -115,11 +126,11 @@ router.post(
       }
 
       const profileImageURL = `/uploads/profileImages/${req.file.filename}`;
-      
+
       const user = await User.findByIdAndUpdate(
         req.user.id,
         { profileImageURL },
-        { new: true }
+        { new: true },
       );
 
       console.log("Profile image uploaded successfully for user:", user._id);
@@ -136,43 +147,6 @@ router.post(
       });
     } catch (error) {
       console.error("Image upload error:", error);
-      res.status(500).json({ message: error.message });
-    }
-  }
-);
-
-module.exports = router;
-    });
-  }
-});
-
-// =========================
-// Upload Profile Image
-// =========================
-router.post(
-  "/upload-image",
-  protect,
-  uploadFiles("profileImages").single("profileImage"),
-  async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
-
-      const profileImageURL = `/uploads/profileImages/${req.file.filename}`;
-
-      const user = await User.findByIdAndUpdate(
-        req.user.id,
-        { profileImageURL },
-        { new: true },
-      );
-
-      res.status(200).json({
-        message: "Profile image uploaded successfully",
-        profileImageURL,
-        user,
-      });
-    } catch (error) {
       res.status(500).json({ message: error.message });
     }
   },
