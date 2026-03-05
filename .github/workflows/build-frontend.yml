@@ -23,11 +23,7 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install parent dependencies
-        working-directory: frontend
-        run: npm install
-
-      - name: Install project dependencies
+      - name: Install dependencies
         working-directory: frontend/expense-tracker
         run: npm install
 

@@ -32,8 +32,18 @@ frontend/expense-tracker
 
 ### Build Command
 
+Leave as default or use:
+
 ```bash
-cd .. && npm install && cd expense-tracker && npm install && npm run build
+npm run build
+```
+
+### Install Command
+
+Leave as default or use:
+
+```bash
+npm install
 ```
 
 ### Output Directory
