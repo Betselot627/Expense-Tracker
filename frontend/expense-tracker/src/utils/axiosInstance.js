@@ -1,9 +1,7 @@
-// src/utils/axiosInstance.js
-
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://expense-tracker-s9zd.onrender.com/api/v1",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
