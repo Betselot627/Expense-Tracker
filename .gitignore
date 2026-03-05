@@ -1,0 +1,55 @@
+# Documentation files (guides created during development)
+*.md
+!README.md
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*/dist/
+*/build/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj*
+*.sln
+*.sw?
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Uploads
+uploads/
+*/uploads/
+
+# Vercel
+.vercel
+
+# Package lock files (optional - uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

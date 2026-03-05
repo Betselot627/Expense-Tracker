@@ -15,8 +15,10 @@ app.use(
       process.env.CLIENT_URL || "http://localhost:5173",
       "http://localhost:5174",
       "http://localhost:5175",
-      
-      ,    ],
+      "https://expense-tracker-bets.netlify.app",
+      "https://expense-tracker-rose-mu-20.vercel.app",
+      "https://expense-tracker-betsi.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
