@@ -23,14 +23,20 @@ Vercel's Git integration automatically:
 4. Ensure your GitHub repository is connected
 5. Verify the branch is set to `main` or `master`
 
-#### 2. Configure Root Directory
+#### 2. Configure Build Settings
 
 In Vercel project settings:
 
 1. Go to `Settings` → `General`
-2. Set "Root Directory" to `frontend/expense-tracker`
-3. Framework Preset should be "Vite"
-4. Save changes
+2. Set these values:
+   - **Root Directory**: `frontend/expense-tracker`
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `cd .. && npm install && cd expense-tracker && npm install && npm run build`
+   - **Output Directory**: `dist`
+   - **Install Command**: `npm install`
+3. Save changes
+
+> **Why the custom build command?** Your project has dependencies in both `frontend/` (Tailwind CSS v4) and `frontend/expense-tracker/` (React app).
 
 #### 3. Add Environment Variables
 
@@ -89,6 +95,8 @@ git push origin main
 - Check Vercel deployment logs in the dashboard
 - Verify `VITE_API_URL` environment variable is set
 - Ensure root directory is `frontend/expense-tracker`
+- Ensure build command includes parent directory: `cd .. && npm install && cd expense-tracker && npm install && npm run build`
+- Check that both `frontend/package.json` and `frontend/expense-tracker/package.json` exist
 
 **Site works but API calls fail?**
 
