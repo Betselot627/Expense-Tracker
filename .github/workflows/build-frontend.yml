@@ -1,14 +1,17 @@
-name: Deploy Frontend to Vercel
+name: Build and Test Frontend
 
 on:
   push:
     branches:
       - main
       - master
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+  pull_request:
+    branches:
+      - main
+      - master
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
 
       - name: Install dependencies
         working-directory: frontend/expense-tracker
@@ -30,11 +33,5 @@ jobs:
         env:
           VITE_API_URL: https://expense-tracker-s9zd.onrender.com/api/v1
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: frontend/expense-tracker
-          vercel-args: "--prod"
+      - name: Build Success ✅
+        run: echo "Frontend build completed successfully! Vercel will deploy automatically."
