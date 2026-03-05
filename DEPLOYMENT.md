@@ -1,80 +1,49 @@
 # Deployment Guide
 
-## Auto-Deploy Frontend to Vercel via GitHub Actions
+## Auto-Deploy Frontend to Vercel (Simple Method)
 
-### Prerequisites
+Since you've already imported your project on Vercel, deployments will happen automatically! No GitHub Actions or secrets needed.
 
-1. A Vercel account
-2. A GitHub repository with this code
-3. Vercel CLI installed locally (optional, for initial setup)
+### How It Works
 
-### Setup Instructions
+Vercel's Git integration automatically:
 
-#### 1. Link Your Project to Vercel
+- Detects when you push to GitHub
+- Builds your project
+- Deploys to production (for main/master branch)
+- Creates preview deployments (for other branches/PRs)
 
-First, you need to link your project to Vercel. You can do this in two ways:
+### Setup Checklist
 
-**Option A: Using Vercel Dashboard**
+#### 1. Verify Vercel Connection
 
 1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Click "Add New Project"
-3. Import your GitHub repository
-4. Set the root directory to `frontend/expense-tracker`
-5. Add environment variable: `VITE_API_URL` = `https://expense-tracker-s9zd.onrender.com/api/v1`
-6. Deploy once manually
+2. Find your project
+3. Go to `Settings` → `Git`
+4. Ensure your GitHub repository is connected
+5. Verify the branch is set to `main` or `master`
 
-**Option B: Using Vercel CLI**
+#### 2. Configure Root Directory
 
-```bash
-cd frontend/expense-tracker
-npm install -g vercel
-vercel login
-vercel link
-```
+In Vercel project settings:
 
-#### 2. Get Vercel Tokens
+1. Go to `Settings` → `General`
+2. Set "Root Directory" to `frontend/expense-tracker`
+3. Framework Preset should be "Vite"
+4. Save changes
 
-1. Go to [Vercel Account Settings](https://vercel.com/account/tokens)
-2. Create a new token with a descriptive name (e.g., "GitHub Actions Deploy")
-3. Copy the token (you'll only see it once!)
+#### 3. Add Environment Variables
 
-#### 3. Get Vercel Project Information
-
-Run these commands in your `frontend/expense-tracker` directory:
-
-```bash
-# Get your Vercel Organization ID
-vercel whoami
-
-# Get your Project ID (after linking)
-cat .vercel/project.json
-```
-
-#### 4. Add GitHub Secrets
-
-Go to your GitHub repository settings:
-
-1. Navigate to: `Settings` → `Secrets and variables` → `Actions`
-2. Click "New repository secret" and add these secrets:
-
-| Secret Name         | Value                                              | Description                 |
-| ------------------- | -------------------------------------------------- | --------------------------- |
-| `VERCEL_TOKEN`      | Your Vercel token                                  | Token from step 2           |
-| `VERCEL_ORG_ID`     | Your org/team ID                                   | From `vercel whoami`        |
-| `VERCEL_PROJECT_ID` | Your project ID                                    | From `.vercel/project.json` |
-| `VITE_API_URL`      | `https://expense-tracker-s9zd.onrender.com/api/v1` | Backend API URL             |
-
-#### 5. Update Vercel Project Settings (Optional)
-
-In your Vercel project settings:
+In Vercel project settings:
 
 1. Go to `Settings` → `Environment Variables`
 2. Add: `VITE_API_URL` = `https://expense-tracker-s9zd.onrender.com/api/v1`
 3. Make sure it's enabled for Production, Preview, and Development
+4. Save
 
-#### 6. Update Backend CORS
+#### 4. Update Backend CORS
 
-Make sure your backend allows the Vercel domain. Add to `backend/server.js`:
+Make sure your backend allows the Vercel domain. In `backend/server.js`:
 
 ```javascript
 app.use(
@@ -82,7 +51,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://expense-tracker-bets.netlify.app",
-      "https://your-vercel-domain.vercel.app", // Add your Vercel domain
+      "https://your-project.vercel.app", // Add your actual Vercel domain
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -91,63 +60,41 @@ app.use(
 );
 ```
 
-#### 7. Trigger Deployment
+#### 5. Trigger First Deployment
 
-The GitHub Action will automatically deploy when you:
-
-- Push to `main` or `master` branch
-- Make changes in the `frontend/` directory
-- Modify the workflow file
-
-To manually trigger:
+Make any small change and push:
 
 ```bash
 git add .
-git commit -m "Setup Vercel auto-deployment"
+git commit -m "Trigger Vercel deployment"
 git push origin main
 ```
 
-### Workflow Behavior
-
-- **On Push to main/master**: Deploys to production
-- **On Pull Request**: Creates a preview deployment
-- **Only triggers when**: Frontend files change
-
 ### Monitoring Deployments
 
-1. **GitHub Actions**: Check the "Actions" tab in your repository
-2. **Vercel Dashboard**: View deployments at [vercel.com/dashboard](https://vercel.com/dashboard)
+1. **Vercel Dashboard**: View all deployments at [vercel.com/dashboard](https://vercel.com/dashboard)
+2. **GitHub**: Vercel bot will comment on commits/PRs with deployment status
+3. **Email**: You'll receive notifications for successful/failed deployments
 
 ### Troubleshooting
 
-**Build fails with "VERCEL_TOKEN not found"**
+**No deployments happening?**
 
-- Make sure you added the secret in GitHub repository settings
-- Secret names are case-sensitive
+- Check Vercel Dashboard → Settings → Git to verify connection
+- Ensure you're pushing to the correct branch (main/master)
+- Check if "Production Branch" is set correctly in Vercel settings
 
-**Build succeeds but site doesn't work**
+**Build fails?**
 
-- Check if `VITE_API_URL` is set correctly
-- Verify backend CORS allows your Vercel domain
-- Check browser console for errors
+- Check Vercel deployment logs in the dashboard
+- Verify `VITE_API_URL` environment variable is set
+- Ensure root directory is `frontend/expense-tracker`
 
-**Changes not deploying**
+**Site works but API calls fail?**
 
-- Ensure changes are in the `frontend/` directory
-- Check if the workflow file is in `.github/workflows/`
-- Verify the branch name matches (main vs master)
-
-### Alternative: Vercel Git Integration
-
-If you prefer Vercel's built-in Git integration instead of GitHub Actions:
-
-1. Go to Vercel Dashboard
-2. Import your GitHub repository
-3. Set root directory to `frontend/expense-tracker`
-4. Add environment variables
-5. Vercel will auto-deploy on every push
-
-This is simpler but gives you less control over the deployment process.
+- Update backend CORS to include your Vercel domain
+- Check browser console for CORS errors
+- Verify `VITE_API_URL` is correct in Vercel environment variables
 
 ---
 
