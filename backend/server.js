@@ -15,6 +15,7 @@ app.use(
       process.env.CLIENT_URL || "http://localhost:5173",
       "http://localhost:5174",
       "http://localhost:5175",
+      "https://expense-tracker-bets.netlify.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
