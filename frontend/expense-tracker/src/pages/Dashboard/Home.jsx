@@ -152,7 +152,7 @@ const Home = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user?.fullName?.split(" ")[0] || "User"}! 👋
+              Welcome back, {user?.fullName?.split(" ")[0] || "User"}! 
             </h1>
             <p className="text-gray-600">Here's your financial overview</p>
           </div>
