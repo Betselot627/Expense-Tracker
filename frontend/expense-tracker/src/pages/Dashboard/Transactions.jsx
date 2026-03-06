@@ -10,6 +10,7 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
+import LoadingScreen from "../../components/LoadingScreen";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 
@@ -90,7 +91,7 @@ const Transactions = () => {
         (tx) =>
           tx.source?.toLowerCase().includes(term) ||
           tx.category?.toLowerCase().includes(term) ||
-          tx.description?.toLowerCase().includes(term)
+          tx.description?.toLowerCase().includes(term),
       );
     }
 
@@ -127,7 +128,10 @@ const Transactions = () => {
 
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      [Object.keys(rows[0]).join(","), ...rows.map((r) => Object.values(r).join(","))].join("\n");
+      [
+        Object.keys(rows[0]).join(","),
+        ...rows.map((r) => Object.values(r).join(",")),
+      ].join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -139,109 +143,109 @@ const Transactions = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-red-600 text-lg font-medium">{error}</div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-red-600 dark:text-red-400 text-lg font-medium">
+          {error}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <Sidebar />
 
-      <div className="flex-1 overflow-auto">
-        <div className="p-6 md:p-10 max-w-7xl mx-auto">
+      <div className="flex-1 overflow-auto pt-16 md:pt-0">
+        <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 All Transactions
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 View and manage all your financial transactions
               </p>
             </div>
             <button
               onClick={handleDownloadCSV}
-              className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-md"
+              className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition shadow-md text-sm w-full sm:w-auto"
             >
-              <Download className="w-5 h-5" />
+              <Download className="w-4 sm:w-5 h-4 sm:h-5" />
               Export CSV
             </button>
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 md:mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium mb-1">
+                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium mb-1">
                     Total Transactions
                   </p>
-                  <h2 className="text-3xl font-bold text-gray-900">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                     {transactions.length}
                   </h2>
                 </div>
-                <div className="bg-purple-100 p-3 rounded-xl">
-                  <ArrowUpDown className="w-6 h-6 text-purple-600" />
+                <div className="bg-purple-100 dark:bg-purple-900/30 p-2 sm:p-3 rounded-xl">
+                  <ArrowUpDown className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl shadow-xl p-6 text-white">
+            <div className="bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl shadow-xl p-4 sm:p-6 text-white">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-green-100 text-sm font-medium mb-1">
+                  <p className="text-green-100 text-xs sm:text-sm font-medium mb-1">
                     Total Income
                   </p>
-                  <h2 className="text-3xl font-bold">
+                  <h2 className="text-2xl sm:text-3xl font-bold">
                     ${totalIncome.toLocaleString()}
                   </h2>
                 </div>
-                <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
-                  <TrendingUp className="w-6 h-6" />
+                <div className="bg-white/20 p-2 sm:p-3 rounded-xl backdrop-blur-sm">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-red-600 to-rose-600 rounded-2xl shadow-xl p-6 text-white">
+            <div className="bg-gradient-to-br from-red-600 to-rose-600 rounded-2xl shadow-xl p-4 sm:p-6 text-white">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-red-100 text-sm font-medium mb-1">
+                  <p className="text-red-100 text-xs sm:text-sm font-medium mb-1">
                     Total Expenses
                   </p>
-                  <h2 className="text-3xl font-bold">
+                  <h2 className="text-2xl sm:text-3xl font-bold">
                     ${totalExpense.toLocaleString()}
                   </h2>
                 </div>
-                <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
-                  <TrendingDown className="w-6 h-6" />
+                <div className="bg-white/20 p-2 sm:p-3 rounded-xl backdrop-blur-sm">
+                  <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6 md:mb-8">
             <div className="flex items-center gap-2 mb-4">
-              <Filter className="w-5 h-5 text-gray-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+              <Filter className="w-4 sm:w-5 h-4 sm:h-5 text-gray-600 dark:text-gray-400" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                Filters
+              </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               {/* Search */}
               <div className="relative">
                 <Search
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   size={18}
                 />
                 <input
@@ -249,7 +253,7 @@ const Transactions = () => {
                   placeholder="Search transactions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  className="w-full pl-10 sm:pl-11 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-sm"
                 />
               </div>
 
@@ -259,10 +263,10 @@ const Transactions = () => {
                   <button
                     key={type}
                     onClick={() => setTypeFilter(type)}
-                    className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium capitalize transition ${
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium capitalize transition ${
                       typeFilter === type
                         ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                     }`}
                   >
                     {type}
@@ -273,13 +277,13 @@ const Transactions = () => {
               {/* Sort */}
               <div className="relative">
                 <Calendar
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   size={18}
                 />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition appearance-none bg-white"
+                  className="w-full pl-10 sm:pl-11 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition appearance-none text-sm"
                 >
                   <option value="date-desc">Newest First</option>
                   <option value="date-asc">Oldest First</option>
@@ -291,9 +295,9 @@ const Transactions = () => {
           </div>
 
           {/* Transactions Table */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
-              <h2 className="text-lg font-semibold text-gray-900">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 {filteredTransactions.length} Transaction
                 {filteredTransactions.length !== 1 ? "s" : ""}
               </h2>
@@ -301,39 +305,39 @@ const Transactions = () => {
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Type
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Category/Source
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">
                       Date
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Amount
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {filteredTransactions.length > 0 ? (
                     filteredTransactions.map((tx) => (
                       <tr
                         key={tx._id}
                         className={`hover:bg-opacity-30 transition ${
                           tx.type === "income"
-                            ? "hover:bg-green-50"
-                            : "hover:bg-red-50"
+                            ? "hover:bg-green-50 dark:hover:bg-green-900/20"
+                            : "hover:bg-red-50 dark:hover:bg-red-900/20"
                         }`}
                       >
                         <td className="px-6 py-4">
                           <div
                             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${
                               tx.type === "income"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
+                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                             }`}
                           >
                             {tx.type === "income" ? (
@@ -349,23 +353,25 @@ const Transactions = () => {
                             <div
                               className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
                                 tx.type === "income"
-                                  ? "bg-green-100"
-                                  : "bg-red-100"
+                                  ? "bg-green-100 dark:bg-green-900/30"
+                                  : "bg-red-100 dark:bg-red-900/30"
                               }`}
                             >
                               {categoryIcons[tx.category] || "•"}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-medium text-gray-900 dark:text-white">
                                 {tx.source || tx.category}
                               </p>
-                              <p className="text-xs text-gray-500">{tx.category}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {tx.category}
+                              </p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Calendar className="w-4 h-4 text-gray-400" />
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                             {tx.date.toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
@@ -377,8 +383,8 @@ const Transactions = () => {
                           <span
                             className={`text-lg font-bold ${
                               tx.type === "income"
-                                ? "text-green-600"
-                                : "text-red-600"
+                                ? "text-green-600 dark:text-green-400"
+                                : "text-red-600 dark:text-red-400"
                             }`}
                           >
                             {tx.type === "income" ? "+" : "-"}$
@@ -391,13 +397,13 @@ const Transactions = () => {
                     <tr>
                       <td colSpan="4" className="px-6 py-16 text-center">
                         <div className="flex flex-col items-center">
-                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                            <ArrowUpDown className="w-8 h-8 text-gray-400" />
+                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                            <ArrowUpDown className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                           </div>
-                          <p className="text-lg font-medium text-gray-500">
+                          <p className="text-lg font-medium text-gray-500 dark:text-gray-400">
                             No transactions found
                           </p>
-                          <p className="text-sm text-gray-400 mt-2">
+                          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
                             {searchTerm || typeFilter !== "all"
                               ? "Try adjusting your filters"
                               : "Start by adding your first transaction"}
@@ -412,9 +418,10 @@ const Transactions = () => {
 
             {/* Pagination Info */}
             {filteredTransactions.length > 0 && (
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <p className="text-sm text-gray-600 text-center">
-                  Showing {filteredTransactions.length} of {transactions.length} total transactions
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                  Showing {filteredTransactions.length} of {transactions.length}{" "}
+                  total transactions
                 </p>
               </div>
             )}

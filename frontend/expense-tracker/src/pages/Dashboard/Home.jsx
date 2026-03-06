@@ -144,21 +144,23 @@ const Home = () => {
       : 0;
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <Sidebar />
 
-      <div className="flex-1 overflow-auto">
-        <div className="p-6 md:p-10 max-w-7xl mx-auto">
+      <div className="flex-1 overflow-auto pt-16 md:pt-0">
+        <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user?.fullName?.split(" ")[0] || "User"}! 
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Welcome back, {user?.fullName?.split(" ")[0] || "User"}!
             </h1>
-            <p className="text-gray-600">Here's your financial overview</p>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+              Here's your financial overview
+            </p>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 md:mb-8">
             {/* Balance Card */}
             <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-6 text-white">
               <div className="flex justify-between items-start mb-4">
@@ -187,42 +189,42 @@ const Home = () => {
             </div>
 
             {/* Income Card */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium mb-1">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
                     Total Income
                   </p>
-                  <h2 className="text-3xl font-bold text-green-600">
+                  <h2 className="text-3xl font-bold text-green-600 dark:text-green-400">
                     ${data.totalIncome.toLocaleString()}
                   </h2>
                 </div>
-                <div className="bg-green-100 p-3 rounded-xl">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
+                <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-xl">
+                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <Activity className="w-4 h-4" />
                 <span>Active income streams</span>
               </div>
             </div>
 
             {/* Expense Card */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium mb-1">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
                     Total Expenses
                   </p>
-                  <h2 className="text-3xl font-bold text-red-600">
+                  <h2 className="text-3xl font-bold text-red-600 dark:text-red-400">
                     ${data.totalExpense.toLocaleString()}
                   </h2>
                 </div>
-                <div className="bg-red-100 p-3 rounded-xl">
-                  <TrendingDown className="w-6 h-6 text-red-600" />
+                <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-xl">
+                  <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <Activity className="w-4 h-4" />
                 <span>Monthly spending</span>
               </div>
@@ -230,13 +232,13 @@ const Home = () => {
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 md:mb-8">
             {/* Monthly Overview - Bar Chart */}
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
                 Monthly Overview
               </h3>
-              <div className="h-80">
+              <div className="h-64 sm:h-80">
                 {monthlyOverview.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthlyOverview}>
@@ -280,11 +282,11 @@ const Home = () => {
             </div>
 
             {/* Category Breakdown - Pie Chart */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
                 Top Expenses
               </h3>
-              <div className="h-80">
+              <div className="h-64 sm:h-80">
                 {categoryData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -328,40 +330,42 @@ const Home = () => {
           </div>
 
           {/* Recent Transactions */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6 md:mb-8">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Recent Transactions
               </h3>
               <Link
                 to="/transactions"
-                className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1 transition"
+                className="text-purple-600 hover:text-purple-700 text-xs sm:text-sm font-medium flex items-center gap-1 transition"
               >
                 View All
-                <ArrowUpRight className="w-4 h-4" />
+                <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
               </Link>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {data.recentTransactions.length > 0 ? (
                 data.recentTransactions.map((tx) => (
                   <div
                     key={tx._id || tx.id}
-                    className="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition border border-gray-100"
+                    className="flex items-center justify-between p-3 sm:p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-100 dark:border-gray-700"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       <div
-                        className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${
-                          tx.type === "income" ? "bg-green-100" : "bg-red-100"
+                        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0 ${
+                          tx.type === "income"
+                            ? "bg-green-100 dark:bg-green-900/30"
+                            : "bg-red-100 dark:bg-red-900/30"
                         }`}
                       >
                         {categoryIcons[tx.category] || "•"}
                       </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">
                           {tx.source || tx.category}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                           {tx.date.toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -371,8 +375,10 @@ const Home = () => {
                       </div>
                     </div>
                     <div
-                      className={`text-lg font-bold ${
-                        tx.type === "income" ? "text-green-600" : "text-red-600"
+                      className={`text-base sm:text-lg font-bold flex-shrink-0 ${
+                        tx.type === "income"
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400"
                       }`}
                     >
                       {tx.type === "income" ? "+" : "-"}$
@@ -381,7 +387,7 @@ const Home = () => {
                   </div>
                 ))
               ) : (
-                <div className="py-12 text-center text-gray-500">
+                <div className="py-12 text-center text-gray-500 dark:text-gray-400">
                   <p className="text-lg font-medium">No transactions yet</p>
                   <p className="text-sm mt-2">
                     Start by adding your first transaction
@@ -394,17 +400,17 @@ const Home = () => {
           {/* Income & Expense Breakdown */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Income Transactions */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
                   </div>
                   Income Transactions
                 </h3>
                 <Link
                   to="/income"
-                  className="text-green-600 hover:text-green-700 text-sm font-medium"
+                  className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm font-medium"
                 >
                   View All →
                 </Link>
@@ -416,17 +422,17 @@ const Home = () => {
                   .map((tx) => (
                     <div
                       key={tx._id}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-green-50 transition border border-green-100"
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition border border-green-100 dark:border-green-900/30"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-lg">
+                        <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-lg">
                           {categoryIcons[tx.category] || "💰"}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900 text-sm">
+                          <p className="font-medium text-gray-900 dark:text-white text-sm">
                             {tx.source || tx.category}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {tx.date.toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
@@ -434,14 +440,14 @@ const Home = () => {
                           </p>
                         </div>
                       </div>
-                      <p className="font-bold text-green-600">
+                      <p className="font-bold text-green-600 dark:text-green-400">
                         +${tx.amount.toLocaleString()}
                       </p>
                     </div>
                   ))}
                 {data.recentTransactions.filter((tx) => tx.type === "income")
                   .length === 0 && (
-                  <div className="py-8 text-center text-gray-400">
+                  <div className="py-8 text-center text-gray-400 dark:text-gray-500">
                     <p className="text-sm">No income transactions yet</p>
                   </div>
                 )}
@@ -449,17 +455,17 @@ const Home = () => {
             </div>
 
             {/* Expense Transactions */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
-                    <TrendingDown className="w-5 h-5 text-red-600" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   Expense Transactions
                 </h3>
                 <Link
                   to="/expense"
-                  className="text-red-600 hover:text-red-700 text-sm font-medium"
+                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium"
                 >
                   View All →
                 </Link>
@@ -471,17 +477,17 @@ const Home = () => {
                   .map((tx) => (
                     <div
                       key={tx._id}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-red-50 transition border border-red-100"
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition border border-red-100 dark:border-red-900/30"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-lg">
+                        <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-lg">
                           {categoryIcons[tx.category] || "🛒"}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900 text-sm">
+                          <p className="font-medium text-gray-900 dark:text-white text-sm">
                             {tx.source || tx.category}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {tx.date.toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
@@ -489,14 +495,14 @@ const Home = () => {
                           </p>
                         </div>
                       </div>
-                      <p className="font-bold text-red-600">
+                      <p className="font-bold text-red-600 dark:text-red-400">
                         -${tx.amount.toLocaleString()}
                       </p>
                     </div>
                   ))}
                 {data.recentTransactions.filter((tx) => tx.type === "expense")
                   .length === 0 && (
-                  <div className="py-8 text-center text-gray-400">
+                  <div className="py-8 text-center text-gray-400 dark:text-gray-500">
                     <p className="text-sm">No expense transactions yet</p>
                   </div>
                 )}
