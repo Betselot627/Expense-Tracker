@@ -1,6 +1,8 @@
 # Documentation files (guides created during development)
+# Keep the docs folder and README
 *.md
 !README.md
+!docs/**/*.md
 
 # Environment variables
 .env
